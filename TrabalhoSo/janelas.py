@@ -13,10 +13,7 @@ class JanelaCMD:
         #self.window.geometry(f"500x300")
 
         self.frame1 = Frame(self.window)
-        #self.frame2 = Frame(self.window)
-
         self.frame1.grid(column=0, row=0)
-        #self.frame2.grid(column=0, row=1)
 
         ############# VARIAVEIS #############
         self.row = 0
@@ -61,8 +58,6 @@ class JanelaCMD:
         if self.txt1.get("current -1 chars") == '$':
             self.txt1.insert(INSERT, " ")
 
-        print(self.txt1.get("current -2 chars"))
-
     def executar_comando(self, comando):
         comando = comando[11:len(comando)]
 
@@ -79,23 +74,80 @@ class JanelaCMD:
         self.window.mainloop()
 
 
-class JanelaDesktop:
+class JanelaDesktop2:
     def __init__(self):
         self.window = tkinter.Tk()
 
         self.window.resizable(False, False)
-        self.window.geometry("600x450")
+        self.window.geometry("1280x720")
 
         self.janela_cmd = None
 
         self.frame1 = Frame(self.window)
+        self.frame2 = Frame(self.window)
 
         self.frame1.grid(column=0, row=0, sticky="N,S,E,W")
-
+        self.frame2.grid(column=0, row=1)
         self.imag1 = PhotoImage(file=r"Imagens/cmd.png")
-        self.imag1 = self.imag1.subsample(3,3)
+        self.imag1 = self.imag1.subsample(3, 3)
         self.btn1 = Button(self.frame1, image=self.imag1, command=lambda: self.window_cmd())
         self.btn1.grid()
+
+        self.btn2 = Button(self.frame2, text="vasco")
+        self.btn2.grid()
+
+    def window_cmd(self):
+        self.janela_cmd = JanelaCMD()
+        self.janela_cmd.run()
+
+    def run(self):
+        self.window.mainloop()
+
+
+class JanelaDesktop:
+    def __init__(self):
+        self.window = tkinter.Tk()
+
+        #self.window.resizable(False, False)
+
+        ### Desativa a caixa que fica em volta da janela ###
+        #self.window.overrideredirect(1)
+
+        ### Centralizar Janela ###
+
+        self.window_width = 1280
+        self.window_height = 720
+
+        self.screen_width = self.window.winfo_screenwidth()
+        self.screen_height = self.window.winfo_screenheight()
+
+        self.x_cordinate = int((self.screen_width/2) - (self.window_width/2))
+        self.y_cordinate = int((self.screen_height/2) - (self.window_height/2))
+
+        self.window.geometry("{}x{}+{}+{}".format(self.window_width, self.window_height,
+                                                  self.x_cordinate, self.y_cordinate))
+
+        ### Canvas ###
+        self.canvas = Canvas(self.window, width=1280, height=720)
+
+        self.plano_de_fundo = PhotoImage(file=r"Imagens/planodefundo.png")
+        self.canvas.create_image(0, 0, image=self.plano_de_fundo, anchor='nw')
+
+        self.canvas.create_rectangle(0, 680, 1280, 720, fill="#404040")
+
+        self.imag1 = PhotoImage(file=r"Imagens/cmd.png")
+        self.imag1 = self.imag1.subsample(3, 3)
+        self.btn2 = Button(self.canvas, image=self.imag1, command=lambda: self.window_cmd())
+        self.canvas.create_window(10, 10, anchor='nw', window=self.btn2)
+
+        self.btn3 = Button(self.canvas, bg="#404040", state="disabled", width=160, height=3)
+        self.canvas.create_window(-3, 675, anchor='nw', window=self.btn3)
+
+        self.icone = PhotoImage(file=r"Imagens/icone6.png")
+        self.btn1 = Button(self.canvas, text="VASCO", image=self.icone, bg="#404040")
+        self.canvas.create_window(-3, 675, anchor='nw', window=self.btn1)
+
+        self.canvas.pack()
 
     def window_cmd(self):
         self.janela_cmd = JanelaCMD()
