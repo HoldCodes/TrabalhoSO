@@ -1,6 +1,7 @@
 import tkinter
 import time
 from tkinter import *
+import platform
 
 
 class JanelaCMD:
@@ -70,48 +71,51 @@ class JanelaCMD:
         except:
             self.txt1.insert(INSERT, "comando nao encontrado\n")
 
+    def quit(self):
+        self.window.destroy()
+
     def run(self):
         self.window.mainloop()
 
 
-class JanelaDesktop2:
+class JanelaSistema:
     def __init__(self):
         self.window = tkinter.Tk()
 
-        self.window.resizable(False, False)
-        self.window.geometry("1280x720")
+        self.window.geometry("800x300")
 
-        self.janela_cmd = None
+        self.frame = Frame(self.window)
+        self.frame.pack()
 
-        self.frame1 = Frame(self.window)
-        self.frame2 = Frame(self.window)
-
-        self.frame1.grid(column=0, row=0, sticky="N,S,E,W")
-        self.frame2.grid(column=0, row=1)
-        self.imag1 = PhotoImage(file=r"Imagens/cmd.png")
-        self.imag1 = self.imag1.subsample(3, 3)
-        self.btn1 = Button(self.frame1, image=self.imag1, command=lambda: self.window_cmd())
-        self.btn1.grid()
-
-        self.btn2 = Button(self.frame2, text="vasco")
-        self.btn2.grid()
-
-    def window_cmd(self):
-        self.janela_cmd = JanelaCMD()
-        self.janela_cmd.run()
+        self.txt = Text(self.window, bg="#404040", fg="white", insertbackground="white", font=("arial", 14, "bold"))
+        self.txt.insert(INSERT, f"{platform.machine()}\n\n")
+        self.txt.insert(INSERT, f"{platform.version()}\n\n")
+        self.txt.insert(INSERT, f"{platform.platform()}\n\n")
+        self.txt.insert(INSERT, f"{platform.uname()}\n\n")
+        self.txt.insert(INSERT, f"{platform.system()}\n\n")
+        self.txt.insert(INSERT, f"{platform.processor()}\n\n")
+        self.txt.pack()
 
     def run(self):
         self.window.mainloop()
+
+
+show = False
 
 
 class JanelaDesktop:
     def __init__(self):
         self.window = tkinter.Tk()
 
-        #self.window.resizable(False, False)
+        self.window.resizable(False, False)
 
         ### Desativa a caixa que fica em volta da janela ###
-        #self.window.overrideredirect(1)
+        #self.window.overrideredirect(0)
+
+        ### Variaveis ###
+        self.janela_cmd = NONE
+        self.janela_menu_desktop = NONE
+        self.janela_sistema = NONE
 
         ### Centralizar Janela ###
 
@@ -130,28 +134,65 @@ class JanelaDesktop:
         ### Canvas ###
         self.canvas = Canvas(self.window, width=1280, height=720)
 
-        self.plano_de_fundo = PhotoImage(file=r"Imagens/planodefundo.png")
-        self.canvas.create_image(0, 0, image=self.plano_de_fundo, anchor='nw')
+        self.imag1 = PhotoImage(file=r"Imagens/planodefundo.png")
+        self.canvas.create_image(0, 0, image=self.imag1, anchor='nw')
 
-        self.canvas.create_rectangle(0, 680, 1280, 720, fill="#404040")
-
-        self.imag1 = PhotoImage(file=r"Imagens/cmd.png")
-        self.imag1 = self.imag1.subsample(3, 3)
-        self.btn2 = Button(self.canvas, image=self.imag1, command=lambda: self.window_cmd())
+        self.imag2 = PhotoImage(file=r"Imagens/cmd.png")
+        self.imag2 = self.imag2.subsample(3, 3)
+        self.btn2 = Button(self.canvas, image=self.imag2, command=lambda: self.window_cmd())
         self.canvas.create_window(10, 10, anchor='nw', window=self.btn2)
 
         self.btn3 = Button(self.canvas, bg="#404040", state="disabled", width=160, height=3)
         self.canvas.create_window(-3, 675, anchor='nw', window=self.btn3)
 
-        self.icone = PhotoImage(file=r"Imagens/icone6.png")
-        self.btn1 = Button(self.canvas, text="VASCO", image=self.icone, bg="#404040")
+        self.imag3 = PhotoImage(file=r"Imagens/icone.png")
+        self.btn1 = Button(self.canvas, image=self.imag3, bg="#404040", command=lambda: self.window_menu_desktop())
         self.canvas.create_window(-3, 675, anchor='nw', window=self.btn1)
+
+        ### desktop widget ###
+        self.imag4 = PhotoImage(file=r"Imagens/desktopMenu.png")
+        self.btn4 = Button(self.canvas, image=self.imag4, bg="#404040", state="disabled")
+        self.canvas.create_window(-3, 420, anchor='nw', window=self.btn4, state='hidden')
+
+        self.imag5 = PhotoImage(file=r"Imagens/icone2.png")
+        self.btn5 = Button(self.canvas, image=self.imag5, bg="#404040", command=lambda: self.quitAll())
+        self.canvas.create_window(25, 615, anchor='nw', window=self.btn5, state="hidden")
+
+        self.imag6 = PhotoImage(file=r"Imagens/icone3.png")
+        self.btn6 = Button(self.canvas, image=self.imag6, bg="#404040", command=lambda: self.window_sistema())
+        self.canvas.create_window(85, 450, anchor='nw', window=self.btn6, state="hidden")
+        #self.canvas.create_rectangle(0, 500, 1280, 720, fill="#404040")
 
         self.canvas.pack()
 
     def window_cmd(self):
         self.janela_cmd = JanelaCMD()
         self.janela_cmd.run()
+
+    def window_sistema(self):
+        self.janela_sistema = JanelaSistema()
+        self.janela_sistema.run()
+
+    def window_menu_desktop(self):
+        global show
+
+        if not show:
+            self.canvas.itemconfig(5, state="normal")
+            self.canvas.itemconfig(6, state="normal")
+            self.canvas.itemconfig(7, state="normal")
+            show = True
+        else:
+            self.canvas.itemconfig(5, state="hidden")
+            self.canvas.itemconfig(6, state="hidden")
+            self.canvas.itemconfig(7, state="hidden")
+            show = False
+
+    def quitAll(self):
+        self.window.destroy()
+        try:
+            self.janela_cmd.quit()
+        except:
+            print()
 
     def run(self):
         self.window.mainloop()
