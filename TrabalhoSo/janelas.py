@@ -2,13 +2,15 @@ import tkinter
 import time
 from tkinter import *
 import platform
+import psutil
+from datetime import datetime
 
 
 class JanelaCMD:
     def __init__(self):
         self.window = tkinter.Tk()
 
-        ############# INFORMACOES DA JANELA #############
+        ############# INFORMACOES DA JANELA ############
         self.window.title("CMD")
         self.window.resizable(False, False)
         #self.window.geometry(f"500x300")
@@ -86,15 +88,24 @@ class JanelaSistema:
 
         self.frame = Frame(self.window)
         self.frame.pack()
+        ### variaveis ###
 
-        self.txt = Text(self.window, bg="#404040", fg="white", insertbackground="white", font=("arial", 14, "bold"))
-        self.txt.insert(INSERT, f"{platform.machine()}\n\n")
-        self.txt.insert(INSERT, f"{platform.version()}\n\n")
-        self.txt.insert(INSERT, f"{platform.platform()}\n\n")
-        self.txt.insert(INSERT, f"{platform.uname()}\n\n")
-        self.txt.insert(INSERT, f"{platform.system()}\n\n")
-        self.txt.insert(INSERT, f"{platform.processor()}\n\n")
+        ### Informacoes do sistema ###
+        self.txt = Text(self.window, bg="#404040", fg="white", insertbackground="white", font=("times", 14))
+        self.txt.insert(INSERT, f"System: {platform.system()}\n")
+        self.txt.insert(INSERT, f"Node Name: {platform.node()}\n")
+        self.txt.insert(INSERT, f"Release: {platform.release()}\n")
+        self.txt.insert(INSERT, f"Version: {platform.version()}\n")
+        self.txt.insert(INSERT, f"Machine: {platform.machine()}\n")
+        self.txt.insert(INSERT, f"Processor: {platform.processor()}\n")
         self.txt.pack()
+
+    def get_size(self, bytes, suffix="B"):
+        factor = 1024
+        for unit in ["", "K", "M", "G", "T", "P"]:
+            if bytes < factor:
+                return f"{bytes:.2f}{unit}{suffix}"
+            bytes /= factor
 
     def run(self):
         self.window.mainloop()
@@ -110,7 +121,7 @@ class JanelaDesktop:
         self.window.resizable(False, False)
 
         ### Desativa a caixa que fica em volta da janela ###
-        #self.window.overrideredirect(0)
+        #self.window.overrideredirect(1)
 
         ### Variaveis ###
         self.janela_cmd = NONE
@@ -162,6 +173,11 @@ class JanelaDesktop:
         self.btn6 = Button(self.canvas, image=self.imag6, bg="#404040", command=lambda: self.window_sistema())
         self.canvas.create_window(85, 450, anchor='nw', window=self.btn6, state="hidden")
         #self.canvas.create_rectangle(0, 500, 1280, 720, fill="#404040")
+
+        self.imag7 = PhotoImage(file=r"Imagens/icone4.png")
+        self.imag7 = self.imag7.subsample(3, 3)
+        self.btn7 = Button(self.canvas, image=self.imag7, command=lambda: self.window_cmd(), bg="white")
+        self.canvas.create_window(10, 100, anchor='nw', window=self.btn7)
 
         self.canvas.pack()
 
