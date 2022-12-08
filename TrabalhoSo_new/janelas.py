@@ -9,10 +9,9 @@ import subprocess
 from datetime import datetime
 
 
-class JanelaSistema:
+class JanelaSistema():
     def __init__(self):
-        self.window = tkinter.Tk()
-
+        self.window = tkinter.Toplevel()
         self.window.geometry("800x500")
 
         ### variaveis ###
@@ -33,6 +32,7 @@ class JanelaSistema:
 
         ### Informacoes do sistema ###
         self.txt = Text(self.window, bg="#404040", fg="white", font=("arial", 11), height=300, width=300)
+        self.txt.insert(INSERT, f"{time.ctime()}\n")
         self.txt.insert(INSERT, f"========== System Information ==========\n"
                                 f"System:  {platform.system()}\n"
                                 f"Node Name:  {platform.node()}\n"
@@ -105,6 +105,11 @@ class JanelaSistema:
 
         self.txt.pack()
 
+    def atu(self):
+        self.txt.delete(1.0, "1.end")
+        self.txt.insert(1.0, time.ctime())
+        self.window.after(1000, self.atu)
+
     def get_size(self, bytes, suffix="B"):
         factor = 1024
         for unit in ["", "K", "M", "G", "T", "P"]:
@@ -113,6 +118,7 @@ class JanelaSistema:
             bytes /= factor
 
     def run(self):
+        self.window.after(1000, self.atu)
         self.window.mainloop()
 
 
@@ -167,17 +173,22 @@ class JanelaDesktop:
         self.canvas.create_window(13, 280, anchor='nw', window=self.btn4)
 
         self.img6 = PhotoImage(file=r"Imagens/Terminal.png")
-        self.btn5 = Button(self.canvas, image=self.img6, background="grey")
+        self.btn5 = Button(self.canvas, image=self.img6, background="grey", command=lambda: os.system("gnome-terminal"))
         self.canvas.create_window(13, 330, anchor='nw', window=self.btn5)
 
+        self.canvas.create_text(65, 500, anchor='nw', text=datetime.now().strftime("%H:%M:%S"))
         self.canvas.pack()
 
-        for thread in threading.enumerate():
-            print(thread.run())
+    def atualizar(self):
+        self.canvas.itemconfig(8, text=datetime.now().strftime("%H:%M:%S"))
+        self.window.after(1000, self.atualizar)
 
     def window_sistema(self):
         self.janela_sistema = JanelaSistema()
         self.janela_sistema.run()
 
     def run(self):
+        self.window.after(1000, self.atualizar)
         self.window.mainloop()
+
+
