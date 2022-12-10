@@ -1,18 +1,105 @@
-import threading
 import tkinter
 import time
 from tkinter import *
 import platform
 import psutil
 import os
-import subprocess
 from datetime import datetime
+from datetime import timedelta
+from datetime import time
+import matplotlib.pyplot as plt
 
 
-class JanelaSistema():
+class JanelaProcessos:
     def __init__(self):
         self.window = tkinter.Toplevel()
-        self.window.geometry("800x500")
+        self.window.geometry("650x460")
+
+        ### Variaveis ###
+        self.objetos = None
+
+        self.start_time = None
+        self.end_time = None
+
+        ### Frame ###
+        self.canvas = Canvas(self.window, width=650, height=460, bg="#404040")
+        self.canvas.pack()
+
+        self.processSorted()
+
+    def processSorted(self):
+        self.canvas.delete("all")
+
+        self.canvas.create_text(10, 10, anchor='nw', text='PID', fill='white')
+        self.canvas.create_text(106, 10, anchor='nw', text='USUARIO', fill='white')
+        self.canvas.create_text(252, 10, anchor='nw', text='%MEM', fill='white')
+        self.canvas.create_text(368, 10, anchor='nw', text='TEMPO+', fill='white')
+        self.canvas.create_text(484, 10, anchor='nw', text='COMANDO', fill='white')
+
+        #Get list of running process sorted by Memory Usage
+        listOfProcObjects = []
+        # Iterate over the list
+        for proc in psutil.process_iter():
+            try:
+                # Fetch process details as dict
+                pinfo = proc.as_dict(attrs=['pid', 'status', 'name', 'username', 'memory_percent', 'create_time'])
+                pinfo['rss'] = proc.memory_info().rss
+                pinfo['status'] = proc.status()
+                # Append dict to list
+                listOfProcObjects.append(pinfo)
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                pass
+        # Sort list of dict by key vms i.e. memory usage
+        listOfProcObjects = sorted(listOfProcObjects, key=lambda procObj: procObj['memory_percent'], reverse=True)
+
+        i = 50
+        for elem in listOfProcObjects[:14]:
+            self.canvas.create_text(10, i, anchor='nw', text=elem.get('pid'), fill='white')
+            self.canvas.create_text(106, i, anchor='nw', text=elem.get('username'), fill='white')
+            self.canvas.create_text(252, i, anchor='nw', text=("%.2f" % float(elem.get('memory_percent'))) + '%',
+                                    fill='white')
+            start_time = datetime.fromtimestamp(elem.get('create_time')).strftime("%H:%M:%S")
+            end_time = datetime.now().strftime("%H:%M:%S")
+
+            t1 = datetime.strptime(start_time, "%H:%M:%S")
+            t2 = datetime.strptime(end_time, "%H:%M:%S")
+            delta = t2 - t1
+
+            self.canvas.create_text(368, i, anchor='nw', text=str(delta), fill='white')
+            self.canvas.create_text(484, i, anchor='nw', text=elem.get('name'), fill='white')
+            i += 30
+
+        print('vasco', i)
+        self.window.after(3000, self.processSorted)
+
+    def run(self):
+        self.window.mainloop()
+
+
+class JanelaSistema2:
+    def __init__(self):
+        self.window = tkinter.Toplevel()
+        self.window.geometry("900x550")
+
+        self.canvas = Canvas(self.window, width=900, height=550, bg="#404040")
+
+        self.canvas.create_rectangle(10, 10, 890, 110, fill="#404040", outline="white")    # 1
+        self.canvas.create_rectangle(10, 120, 296, 325, fill="#404040", outline="white")   # 2
+        self.canvas.create_rectangle(306, 120, 592, 325, fill="#404040", outline="white")  # 3
+        self.canvas.create_rectangle(602, 120, 888, 325, fill="#404040", outline="white")  # 4
+        self.canvas.create_rectangle(10, 335, 444, 540, fill="#404040", outline="white")   # 5
+        self.canvas.create_rectangle(454, 335, 888, 540, fill="#404040", outline="white")  # 7
+
+        self.canvas.pack()
+
+    def run(self):
+        self.window.mainloop()
+
+
+class JanelaSistema:
+    def __init__(self):
+        self.window = tkinter.Toplevel()
+        self.window.geometry("900x550")
 
         ### variaveis ###
         self.boot_time_timestamp = psutil.boot_time()
@@ -161,11 +248,11 @@ class JanelaDesktop:
         self.canvas.create_window(13, 130, anchor='nw', window=self.btn1)
 
         self.img3 = PhotoImage(file=r"Imagens/arquivos.png")
-        self.btn2 = Button(self.canvas, image=self.img3, background="grey")
+        self.btn2 = Button(self.canvas, image=self.img3, background="grey", command=lambda: self.window_sistema2())
         self.canvas.create_window(13, 180, anchor='nw', window=self.btn2)
 
         self.img4 = PhotoImage(file=r"Imagens/processos.png")
-        self.btn3 = Button(self.canvas, image=self.img4, background="grey")
+        self.btn3 = Button(self.canvas, image=self.img4, background="grey", command=lambda: self.window_processos())
         self.canvas.create_window(13, 230, anchor='nw', window=self.btn3)
 
         self.img5 = PhotoImage(file=r"Imagens/memoria.png")
@@ -187,8 +274,14 @@ class JanelaDesktop:
         self.janela_sistema = JanelaSistema()
         self.janela_sistema.run()
 
+    def window_sistema2(self):
+        self.janela_sistema2 = JanelaSistema2()
+        self.janela_sistema2.run()
+
+    def window_processos(self):
+        self.janela_processos = JanelaProcessos()
+        self.janela_processos.run()
+
     def run(self):
         self.window.after(1000, self.atualizar)
         self.window.mainloop()
-
-
