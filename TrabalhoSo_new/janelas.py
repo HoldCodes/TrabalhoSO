@@ -5,15 +5,145 @@ import platform
 import psutil
 import os
 from datetime import datetime
-from datetime import timedelta
 from datetime import time
-import matplotlib.pyplot as plt
+
+
+class JanelaMemoria:
+    def __init__(self):
+        self.window = tkinter.Toplevel()
+        self.window.geometry("850x450")
+        self.window.title("Memoria")
+
+        ### Variaveis ###
+        self.linhasRAM = []
+        self.linhasDisco = []
+
+        self.svmem = psutil.virtual_memory()
+
+        self.partitions = psutil.disk_partitions()
+        self.partition_usage = None
+        self.disk_io = None
+
+        try:
+            self.partition_usage = psutil.disk_usage(self.partitions[0].mountpoint)
+        except PermissionError:
+            pass
+
+        self.arcDisco = int((self.partition_usage.used * 360) / self.partition_usage.total)
+
+        ### Canvas ###
+        self.canvas = Canvas(self.window, width=850, height=450, bg="#404040")
+        self.canvas.create_text(90, 315, text=f"% de utilizacao: {00}%", fill="white")      # ID 1
+        self.canvas.create_text(510, 315, text=f"% de utilizacao: {00}%", fill="white")     # ID 2
+
+        self.canvas.create_text(200, 20, text="MEMORIA", fill="white", font=("arial", 20))  # ID 3
+        self.canvas.create_text(620, 20, text="DISCO", fill="white", font=("arial", 20))    # ID 4
+
+        self.canvas.create_text(610, 60, text="Dispositivo: " + self.partitions[0].device,  # ID 5
+                                fill="white", font=("arial", 15))
+
+        self.canvas.create_text(200, 100, text="Total: " + self.get_size(self.svmem.total), fill="white")  # 6
+        self.canvas.create_text(200, 275, text="Usado: 0GB", fill="white")   # 7
+        self.canvas.create_text(620, 100, text="Total: " + self.get_size(self.partition_usage.total), fill="white")  # 8
+        self.canvas.create_text(620, 275, text="Usado: " + self.get_size(self.partition_usage.used), fill="white")   # 9
+
+        self.canvas.create_text(390, 315, text="100%", fill="white")  # ID 10
+        self.canvas.create_text(400, 440, text="0%", fill="white")    # ID 11
+        self.canvas.create_text(810, 315, text="100%", fill="white")  # ID 12
+        self.canvas.create_text(820, 440, text="0%", fill="white")    # ID 13
+
+        self.canvas.create_rectangle(9, 329, 411, 431, fill="#404040", outline="white")           # ID 14
+        self.canvas.create_rectangle(429, 329, 831, 431, fill="#404040", outline="white")         # ID 15
+
+        self.canvas.create_arc(100, 120, 300, 260, start=0, extent=180, fill="blue")              # ID 16
+        self.canvas.create_arc(520, 120, 720, 260, start=0, extent=self.arcDisco, fill="blue")    # ID 17
+
+        self.linhasRAM.append(self.canvas.create_line(10, 430, 90, 430, fill="green", width=2))
+        self.linhasRAM.append(self.canvas.create_line(90, 430, 170, 430, fill="green", width=2))
+        self.linhasRAM.append(self.canvas.create_line(170, 430, 250, 430, fill="green", width=2))
+        self.linhasRAM.append(self.canvas.create_line(250, 430, 330, 430, fill="green", width=2))
+        self.linhasRAM.append(self.canvas.create_line(330, 430, 410, 430, fill="green", width=2))
+
+        self.linhasDisco.append(self.canvas.create_line(430, 430, 510, 430, fill="green", width=2))
+        self.linhasDisco.append(self.canvas.create_line(510, 430, 590, 430, fill="green", width=2))
+        self.linhasDisco.append(self.canvas.create_line(590, 430, 670, 430, fill="green", width=2))
+        self.linhasDisco.append(self.canvas.create_line(670, 430, 750, 430, fill="green", width=2))
+        self.linhasDisco.append(self.canvas.create_line(750, 430, 830, 430, fill="green", width=2))
+
+        self.canvas.pack()
+
+    def atualizar(self):
+        ### uso da memoria ###
+        self.svmem = psutil.virtual_memory()
+
+        self.get_size(self.svmem.total)          # Total
+        self.get_size(self.svmem.available)      # Available
+        self.get_size(self.svmem.used)           # Used
+        porcentagem = self.svmem.percent         # Percent
+
+        self.canvas.coords(self.linhasRAM[0], 10, self.canvas.coords(self.linhasRAM[1])[1],
+                           90, self.canvas.coords(self.linhasRAM[1])[1])
+        self.canvas.coords(self.linhasRAM[1], 90, self.canvas.coords(self.linhasRAM[2])[1],
+                           170, self.canvas.coords(self.linhasRAM[2])[1])
+        self.canvas.coords(self.linhasRAM[2], 170, self.canvas.coords(self.linhasRAM[3])[1],
+                           250, self.canvas.coords(self.linhasRAM[3])[1])
+        self.canvas.coords(self.linhasRAM[3], 250, self.canvas.coords(self.linhasRAM[4])[1],
+                           330, self.canvas.coords(self.linhasRAM[4])[1])
+        self.canvas.coords(self.linhasRAM[4], 300, 430 - int(porcentagem),
+                           410, 430 - int(porcentagem))
+
+        self.canvas.itemconfig(1, text=f"% de utilizacao: {porcentagem}%")   # % Utilizacao RAM
+
+        ### Uso do Disco ###
+        self.partitions = psutil.disk_partitions()
+        self.partition_usage = NONE
+        self.disk_io = psutil.disk_io_counters()
+
+        self.partition_usage = psutil.disk_usage(self.partitions[0].mountpoint)
+
+        try:
+            self.partition_usage = psutil.disk_usage(self.partitions[0].mountpoint)
+        except PermissionError:
+            pass
+
+        self.get_size(self.partition_usage.used)
+        self.get_size(self.partition_usage.free)
+        porcentagem2 = self.partition_usage.percent
+
+        self.canvas.coords(self.linhasDisco[0], 430, self.canvas.coords(self.linhasDisco[1])[1],
+                           510, self.canvas.coords(self.linhasDisco[1])[1])
+        self.canvas.coords(self.linhasDisco[1], 510, self.canvas.coords(self.linhasDisco[2])[1],
+                           590, self.canvas.coords(self.linhasDisco[2])[1])
+        self.canvas.coords(self.linhasDisco[2], 590, self.canvas.coords(self.linhasDisco[3])[1],
+                           670, self.canvas.coords(self.linhasDisco[3])[1])
+        self.canvas.coords(self.linhasDisco[3], 670, self.canvas.coords(self.linhasDisco[4])[1],
+                           750, self.canvas.coords(self.linhasDisco[4])[1])
+        self.canvas.coords(self.linhasDisco[4], 750, 430 - int(porcentagem2),
+                           830, 430 - int(porcentagem2))
+
+        self.canvas.itemconfig(2, text=f"% de utilizacao: {porcentagem2}%")  # % Utilizacao RAM
+        self.canvas.itemconfig(7, text="Usado: " + self.get_size(self.svmem.used))
+        self.canvas.itemconfig(16, extent=int((self.svmem.used * 360) / self.svmem.total))
+
+        self.window.after(2000, self.atualizar)
+
+    def get_size(self, bytes, suffix="B"):
+        factor = 1024
+        for unit in ["", "K", "M", "G", "T", "P"]:
+            if bytes < factor:
+                return f"{bytes:.2f}{unit}{suffix}"
+            bytes /= factor
+
+    def run(self):
+        self.window.after(1000, self.atualizar)
+        self.window.mainloop()
 
 
 class JanelaProcessos:
     def __init__(self):
         self.window = tkinter.Toplevel()
         self.window.geometry("650x460")
+        self.window.title("Processos")
 
         ### Variaveis ###
         self.objetos = None
@@ -69,7 +199,6 @@ class JanelaProcessos:
             self.canvas.create_text(484, i, anchor='nw', text=elem.get('name'), fill='white')
             i += 30
 
-        print('vasco', i)
         self.window.after(3000, self.processSorted)
 
     def run(self):
@@ -119,7 +248,7 @@ class JanelaSistema:
 
         ### Informacoes do sistema ###
         self.txt = Text(self.window, bg="#404040", fg="white", font=("arial", 11), height=300, width=300)
-        self.txt.insert(INSERT, f"{time.ctime()}\n")
+        #self.txt.insert(INSERT, f"{time.ctime()}\n")
         self.txt.insert(INSERT, f"========== System Information ==========\n"
                                 f"System:  {platform.system()}\n"
                                 f"Node Name:  {platform.node()}\n"
@@ -212,6 +341,7 @@ class JanelaSistema:
 class JanelaDesktop:
     def __init__(self):
         self.window = tkinter.Tk()
+        self.window.title("Desktop")
 
         self.window.resizable(False, False)
 
@@ -256,7 +386,7 @@ class JanelaDesktop:
         self.canvas.create_window(13, 230, anchor='nw', window=self.btn3)
 
         self.img5 = PhotoImage(file=r"Imagens/memoria.png")
-        self.btn4 = Button(self.canvas, image=self.img5, background="grey")
+        self.btn4 = Button(self.canvas, image=self.img5, background="grey", command=lambda: self.window_memoria())
         self.canvas.create_window(13, 280, anchor='nw', window=self.btn4)
 
         self.img6 = PhotoImage(file=r"Imagens/Terminal.png")
@@ -281,6 +411,10 @@ class JanelaDesktop:
     def window_processos(self):
         self.janela_processos = JanelaProcessos()
         self.janela_processos.run()
+
+    def window_memoria(self):
+        self.janela_memoria = JanelaMemoria()
+        self.janela_memoria.run()
 
     def run(self):
         self.window.after(1000, self.atualizar)
