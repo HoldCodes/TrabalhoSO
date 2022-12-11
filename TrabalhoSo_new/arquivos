@@ -1,0 +1,5 @@
+lista = os.listdir(path='/home/bruno')
+        lista = [l for l in lista if l[0] != '.']
+        for i in range(len(lista)):
+            lista[i] = unidecode(lista[i])
+        lista1 = sorted(lista)
