@@ -7,6 +7,71 @@ import os
 from datetime import datetime
 from datetime import time
 
+from unidecode import unidecode
+
+
+class JanelaArquivo:
+    def __init__(self):
+        self.window = tkinter.Toplevel()
+        self.window.geometry("712x562")
+        self.window.title("Arquivos")
+
+        self.frame1= Frame(self.window)
+        self.frame1.grid()
+
+        self.img1 = PhotoImage(file=r"Imagens/pasta.png")
+
+        self.listaBtn = []
+
+        self.lista = os.listdir(path='/home/ronaldinho')
+        self.lista = [l for l in self.lista if l[0] != '.']
+        for i in range(len(self.lista)):
+            self.lista[i] = unidecode(self.lista[i])
+        self.lista = sorted(self.lista)
+
+        y = 0
+        x = 0
+        for i in range(0, len(self.lista)):
+            if i % 4 == 0 and i != 0:
+                y += 1
+                x = 0
+
+            self.listaBtn.append(Button(self.frame1, text=self.lista[i], font=("arial", 12), image=self.img1,
+                              compound="bottom"))
+            self.listaBtn[i].grid(column=x, row=y)
+            x += 1
+
+    def atualizar(self):
+
+        for item in self.listaBtn:
+            item.destroy()
+
+        self.listaBtn = []
+
+        self.lista = os.listdir(path='/home/ronaldinho')
+        self.lista = [l for l in self.lista if l[0] != '.']
+        for i in range(len(self.lista)):
+            self.lista[i] = unidecode(self.lista[i])
+        self.lista = sorted(self.lista)
+
+        y = 0
+        x = 0
+        for i in range(0, len(self.lista)):
+            if i % 4 == 0 and i != 0:
+                y += 1
+                x = 0
+
+            self.listaBtn.append(Button(self.frame1, text=self.lista[i], font=("arial", 12), image=self.img1,
+                                        compound="bottom"))
+            self.listaBtn[i].grid(column=x, row=y)
+            x += 1
+
+        self.window.after(3000, self.atualizar)
+
+    def run(self):
+        self.window.after(1000, self.atualizar)
+        self.window.mainloop()
+
 
 class JanelaMemoria:
     def __init__(self):
@@ -205,30 +270,11 @@ class JanelaProcessos:
         self.window.mainloop()
 
 
-class JanelaSistema2:
-    def __init__(self):
-        self.window = tkinter.Toplevel()
-        self.window.geometry("900x550")
-
-        self.canvas = Canvas(self.window, width=900, height=550, bg="#404040")
-
-        self.canvas.create_rectangle(10, 10, 890, 110, fill="#404040", outline="white")    # 1
-        self.canvas.create_rectangle(10, 120, 296, 325, fill="#404040", outline="white")   # 2
-        self.canvas.create_rectangle(306, 120, 592, 325, fill="#404040", outline="white")  # 3
-        self.canvas.create_rectangle(602, 120, 888, 325, fill="#404040", outline="white")  # 4
-        self.canvas.create_rectangle(10, 335, 444, 540, fill="#404040", outline="white")   # 5
-        self.canvas.create_rectangle(454, 335, 888, 540, fill="#404040", outline="white")  # 7
-
-        self.canvas.pack()
-
-    def run(self):
-        self.window.mainloop()
-
-
 class JanelaSistema:
     def __init__(self):
         self.window = tkinter.Toplevel()
-        self.window.geometry("900x550")
+        self.window.geometry("900x520")
+        self.window.title("Sistema")
 
         ### variaveis ###
         self.boot_time_timestamp = psutil.boot_time()
@@ -248,8 +294,8 @@ class JanelaSistema:
 
         ### Informacoes do sistema ###
         self.txt = Text(self.window, bg="#404040", fg="white", font=("arial", 11), height=300, width=300)
-        #self.txt.insert(INSERT, f"{time.ctime()}\n")
-        self.txt.insert(INSERT, f"========== System Information ==========\n"
+        self.txt.insert(1.0, datetime.now().strftime("%H:%M:%S\n"))
+        self.txt.insert(INSERT, f"\n========== System Information ==========\n"
                                 f"System:  {platform.system()}\n"
                                 f"Node Name:  {platform.node()}\n"
                                 f"Release:  {platform.release()}\n"
@@ -257,73 +303,48 @@ class JanelaSistema:
                                 f"Machine:  {platform.machine()}\n"
                                 f"Processor:  {platform.processor()}\n")
 
-        self.txt.insert(INSERT, f"========== Boot Time: ==========\n"
+        self.txt.insert(INSERT, f"\n\n========== Boot Time: ==========\n"
                                 f"Boot time:  {self.bt.year}/{self.bt.month}/{self.bt.day} "
                                 f"{self.bt.hour}:{self.bt.minute}:{self.bt.second}\n")
 
-        self.txt.insert(INSERT, f"========== CPU Information: ==========\n"
+        self.txt.insert(INSERT, f"\n\n========== CPU Information: ==========\n"
                                 f"Physical Cores:  {psutil.cpu_count(logical=False)}\n"
                                 f"Total Cores:  {psutil.cpu_count(logical=True)}\n"
-                                f"Max Frequency:  {self.cpufreq.max:.2f}Mhz\n"
-                                f"Min Frequency:  {self.cpufreq.min:.2f}Mhz\n"
                                 f"Current Frequency:  {self.cpufreq.current:.2f}Mhz\n"
                                 f"CPU Usage Per Core: \n")
         for i, percentage in enumerate(psutil.cpu_percent(percpu=True)):
             self.txt.insert(INSERT, f"Core {i}:  {percentage}%\n")
         self.txt.insert(INSERT, f"Total CPU Usage:  {psutil.cpu_percent()}%\n")
 
-        self.txt.insert(INSERT, f"========== Memory Usage: ==========\n"
-                                f"Total:  {self.get_size(self.svmem.total)}\n"
-                                f"Available:  {self.get_size(self.svmem.available)}\n"
-                                f"Used:  {self.get_size(self.svmem.used)}\n"
-                                f"Percentage:  {self.get_size(self.svmem.percent)}%\n"
-                                f"===== Swap =====\n"
-                                f"Total:  {self.get_size(self.swap.total)}\n"
-                                f"Free:  {self.get_size(self.swap.free)}\n"
-                                f"Used:  {self.get_size(self.swap.used)}\n"
-                                f"Percentage:  {self.get_size(self.swap.percent)}%\n")
-
-        self.txt.insert(INSERT, f"========== Disk Usage: ==========\n"
-                                f"Partitions and Usage: \n")
-
-        for partition in self.partitions:
-            self.txt.insert(INSERT, f"=== Device: {partition.device} ===\n"
-                                    f"  Mountpoint: {partition.mountpoint}\n"
-                                    f"  File system type: {partition.fstype}\n")
-
-            try:
-                self.partition_usage = psutil.disk_usage(partition.mountpoint)
-            except PermissionError:
-                continue
-
-            self.txt.insert(INSERT, f"  Total Size: {self.get_size(self.partition_usage.total)}\n"
-                                    f"  Used: {self.get_size(self.partition_usage.used)}\n"
-                                    f"  Free: {self.get_size(self.partition_usage.free)}\n"
-                                    f"  Percentage: {self.get_size(self.partition_usage.percent)}%\n")
-
-        self.txt.insert(INSERT, f"Total read: {self.get_size(self.disk_io.read_bytes)}\n"
-                                f"Total write: {self.get_size(self.disk_io.write_bytes)}\n")
-
-        self.txt.insert(INSERT, f"========== Network Information: ==========\n")
-        for interface_name, interface_addresses in self.if_addrs.items():
-            for address in interface_addresses:
-                self.txt.insert(INSERT, f"=== Interface: {interface_name} ===\n")
-                if str(address.family) == 'AddressFamily.AF_INET':
-                    self.txt.insert(INSERT, f"  IP Address: {address.address}\n"
-                                            f"  Netmask: {address.netmask}\n"
-                                            f"  Broadcast IP: {address.broadcast}\n")
-                elif str(address.family) == 'AddressFamily.AF_PACKET':
-                    self.txt.insert(INSERT, f"  MAC Address: {address.address}\n"
-                                            f"  Netmask: {address.netmask}\n"
-                                            f"  Broadcast MAC: {address.broadcast}\n")
-        self.txt.insert(INSERT, f"Total Bytes Sent: {self.get_size(self.net_io.bytes_sent)}\n"
-                                f"Total Bytes Received: {self.get_size(self.net_io.bytes_recv)}\n")
-
         self.txt.pack()
 
     def atu(self):
-        self.txt.delete(1.0, "1.end")
-        self.txt.insert(1.0, time.ctime())
+        self.txt.delete(1.0, END)
+
+        self.txt.insert(1.0, datetime.now().strftime("%H:%M:%S\n"))
+        self.txt.insert(INSERT, f"\n========== System Information ==========\n"
+                                f"System:  {platform.system()}\n"
+                                f"Node Name:  {platform.node()}\n"
+                                f"Release:  {platform.release()}\n"
+                                f"Version:  {platform.version()}\n"
+                                f"Machine:  {platform.machine()}\n"
+                                f"Processor:  {platform.processor()}\n")
+
+        self.txt.insert(INSERT, f"\n\n========== Boot Time: ==========\n"
+                                f"Boot time:  {self.bt.year}/{self.bt.month}/{self.bt.day} "
+                                f"{self.bt.hour}:{self.bt.minute}:{self.bt.second}\n")
+
+        self.txt.insert(INSERT, f"\n\n========== CPU Information: ==========\n"
+                                f"Physical Cores:  {psutil.cpu_count(logical=False)}\n"
+                                f"Total Cores:  {psutil.cpu_count(logical=True)}\n"
+                                f"Current Frequency:  {self.cpufreq.current:.2f}Mhz\n"
+                                f"CPU Usage Per Core: \n")
+        for i, percentage in enumerate(psutil.cpu_percent(percpu=True)):
+            self.txt.insert(INSERT, f"Core {i}:  {percentage}%\n")
+        self.txt.insert(INSERT, f"Total CPU Usage:  {psutil.cpu_percent()}%\n")
+
+        self.txt.pack()
+
         self.window.after(1000, self.atu)
 
     def get_size(self, bytes, suffix="B"):
@@ -346,9 +367,13 @@ class JanelaDesktop:
         self.window.resizable(False, False)
 
         ### Variaveis ###
-        self.janela_cmd = NONE
-        self.janela_menu_desktop = NONE
-        self.janela_sistema = NONE
+        self.janela_cmd = None
+        self.janela_menu_desktop = None
+        self.janela_sistema = None
+        self.janela_sistema2 = None
+        self.janela_processos = None
+        self.janela_memoria = None
+        self.janela_arquivos = None
 
         ### Centralizar Janela ###
 
@@ -378,7 +403,7 @@ class JanelaDesktop:
         self.canvas.create_window(13, 130, anchor='nw', window=self.btn1)
 
         self.img3 = PhotoImage(file=r"Imagens/arquivos.png")
-        self.btn2 = Button(self.canvas, image=self.img3, background="grey", command=lambda: self.window_sistema2())
+        self.btn2 = Button(self.canvas, image=self.img3, background="grey", command=lambda: self.window_arquivos())
         self.canvas.create_window(13, 180, anchor='nw', window=self.btn2)
 
         self.img4 = PhotoImage(file=r"Imagens/processos.png")
@@ -415,6 +440,10 @@ class JanelaDesktop:
     def window_memoria(self):
         self.janela_memoria = JanelaMemoria()
         self.janela_memoria.run()
+
+    def window_arquivos(self):
+        self.janela_arquivos = JanelaArquivo()
+        self.janela_arquivos.run()
 
     def run(self):
         self.window.after(1000, self.atualizar)
